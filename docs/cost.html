@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiracleWS Cost Simulator</title>
+  <meta name="description" content="Estimate how many servers you need with MiracleWS vs your current WebSocket stack. Per-connection RAM breakdown with kernel/TCP overhead included." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="cost.css" />
+
+  <!-- Screen-reader utility -->
+  <style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav" aria-label="Site navigation">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo" aria-label="MiracleWS — back to landing">
+        <img src="assets/logo-mark.png" alt="MiracleWS mark" height="28" width="28" />
+      </a>
+      <a href="https://github.com/pikyusufaslan/miraclews/issues" class="nav__cta">
+        Get a license &rarr;
+      </a>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- Page header -->
+    <header class="cost-header">
+      <div class="container">
+        <span class="section-label" aria-hidden="true">Cost Simulator</span>
+        <h1>MiracleWS Cost Simulator</h1>
+        <p class="cost-header__sub">
+          MiracleWS userspace footprint is tiny, but total server count includes kernel/TCP overhead.
+          Numbers are model estimates &mdash; verify against your own load profile.
+        </p>
+      </div>
+    </header>
+
+    <!-- Tab bar -->
+    <div class="cost-tabs" role="tablist" aria-label="Simulator mode">
+      <div class="cost-tabs__inner">
+        <button
+          id="tab-selfhosted"
+          class="cost-tab cost-tab--active"
+          role="tab"
+          aria-selected="true"
+          aria-controls="panel-selfhosted"
+        >Self-hosted</button>
+        <button
+          id="tab-saas"
+          class="cost-tab"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-saas"
+          disabled
+          title="SaaS comparison coming soon"
+        >SaaS <span style="font-weight:400;opacity:0.6;font-size:0.75em;">(Task 3)</span></button>
+      </div>
+    </div>
+
+    <!-- Self-hosted panel -->
+    <section
+      id="panel-selfhosted"
+      class="cost-body"
+      role="tabpanel"
+      aria-labelledby="tab-selfhosted"
+    >
+      <div class="container">
+        <div class="cost-layout">
+
+          <!-- ── Inputs sidebar ── -->
+          <aside class="cost-inputs" aria-label="Workload and box inputs">
+
+            <!-- Workload -->
+            <div class="input-section">
+              <div class="input-section__title">Workload</div>
+
+              <div class="input-row">
+                <label for="input-conns">Concurrent connections</label>
+                <input
+                  type="number"
+                  id="input-conns"
+                  value="1000000"
+                  min="0"
+                  step="10000"
+                  aria-describedby="conns-hint"
+                />
+                <span id="conns-hint" class="sr-only">Default 1 million connections</span>
+              </div>
+
+              <div class="input-row">
+                <label for="input-msgs">Messages / sec (total inbound)</label>
+                <input
+                  type="number"
+                  id="input-msgs"
+                  value="1200000"
+                  min="0"
+                  step="100000"
+                />
+              </div>
+
+              <div class="input-row">
+                <label for="input-fanout">Fanout per message (outbound multiplier)</label>
+                <input
+                  type="number"
+                  id="input-fanout"
+                  value="1"
+                  min="1"
+                  step="1"
+                />
+              </div>
+
+              <div class="input-row">
+                <label for="input-payload">Avg payload bytes <span style="color:var(--muted);font-weight:400;">(display only)</span></label>
+                <input
+                  type="number"
+                  id="input-payload"
+                  value="256"
+                  min="1"
+                  step="64"
+                  aria-describedby="payload-hint"
+                />
+                <span id="payload-hint" class="sr-only">Not currently factored into server count — shown for reference.</span>
+              </div>
+
+              <div class="input-row input-row--checkbox">
+                <input type="checkbox" id="input-tls" />
+                <label for="input-tls">TLS in-process (rustls overhead)</label>
+              </div>
+
+              <div class="input-row">
+                <label for="input-stack">Current stack (compare against)</label>
+                <select id="input-stack" aria-label="Current WebSocket stack">
+                  <!-- populated by JS from DEFAULTS.stacks -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Box preset -->
+            <div class="input-section">
+              <div class="input-section__title">Server box</div>
+              <div class="box-preset-row">
+                <div class="input-row" style="margin-bottom:0">
+                  <label for="input-preset">Preset</label>
+                  <select id="input-preset" aria-label="Box preset">
+                    <!-- populated by JS from DEFAULTS.boxes -->
+                  </select>
+                </div>
+                <div class="box-fields">
+                  <div class="box-field">
+                    <label for="input-vcpu">vCPU</label>
+                    <input type="number" id="input-vcpu" min="1" step="1" />
+                  </div>
+                  <div class="box-field">
+                    <label for="input-ram">RAM (GB)</label>
+                    <input type="number" id="input-ram" min="1" step="1" />
+                  </div>
+                  <div class="box-field">
+                    <label for="input-price">$/mo</label>
+                    <input type="number" id="input-price" min="1" step="1" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </aside>
+
+          <!-- ── Results area ── -->
+          <div class="cost-results" aria-live="polite" aria-label="Cost simulation results">
+
+            <!-- Two comparison cards -->
+            <div class="result-cards" role="region" aria-label="Comparison">
+              <!-- Current stack card -->
+              <div class="result-card" id="card-current" aria-label="Current stack results">
+                <div class="result-card__header">
+                  <span class="result-card__name" id="card-current-name">tokio-tungstenite</span>
+                  <span class="result-card__bound-badge result-card__bound-badge--ram" id="card-current-badge">RAM</span>
+                </div>
+                <div class="result-card__primary">
+                  <div class="result-card__servers" id="card-current-servers">—</div>
+                  <div class="result-card__servers-label">servers needed</div>
+                </div>
+                <div>
+                  <div class="result-card__monthly" id="card-current-monthly">—</div>
+                  <div class="result-card__monthly-label">/ month</div>
+                </div>
+                <div class="result-card__breakdown">
+                  <div class="breakdown-row">
+                    <span class="breakdown-row__label">Userspace</span>
+                    <span class="breakdown-row__value" id="card-current-us">—</span>
+                  </div>
+                  <div class="breakdown-row">
+                    <span class="breakdown-row__label">Kernel floor</span>
+                    <span class="breakdown-row__value" id="card-current-kern">—</span>
+                  </div>
+                  <div class="breakdown-row" id="card-current-tls-row" style="display:none">
+                    <span class="breakdown-row__label">rustls (TLS)</span>
+                    <span class="breakdown-row__value" id="card-current-tls-val">—</span>
+                  </div>
+                  <div class="breakdown-row breakdown-row--total">
+                    <span class="breakdown-row__label">Total / conn</span>
+                    <span class="breakdown-row__value" id="card-current-total">—</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MiracleWS card -->
+              <div class="result-card result-card--miraclews" id="card-mws" aria-label="MiracleWS results">
+                <div class="result-card__header">
+                  <span class="result-card__name">MiracleWS</span>
+                  <span class="result-card__bound-badge result-card__bound-badge--ram" id="card-mws-badge">RAM</span>
+                </div>
+                <div class="result-card__primary">
+                  <div class="result-card__servers" id="card-mws-servers">—</div>
+                  <div class="result-card__servers-label">servers needed</div>
+                </div>
+                <div>
+                  <div class="result-card__monthly" id="card-mws-monthly">—</div>
+                  <div class="result-card__monthly-label">/ month</div>
+                </div>
+                <div class="result-card__breakdown">
+                  <div class="breakdown-row">
+                    <span class="breakdown-row__label">Userspace</span>
+                    <span class="breakdown-row__value" id="card-mws-us">—</span>
+                  </div>
+                  <div class="breakdown-row">
+                    <span class="breakdown-row__label">Kernel floor</span>
+                    <span class="breakdown-row__value" id="card-mws-kern">—</span>
+                  </div>
+                  <div class="breakdown-row" id="card-mws-tls-row" style="display:none">
+                    <span class="breakdown-row__label">rustls (TLS)</span>
+                    <span class="breakdown-row__value" id="card-mws-tls-val">—</span>
+                  </div>
+                  <div class="breakdown-row breakdown-row--total">
+                    <span class="breakdown-row__label">Total / conn</span>
+                    <span class="breakdown-row__value" id="card-mws-total">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Saving headline -->
+            <div class="saving-headline" id="saving-headline" aria-live="polite">
+              <div class="saving-headline__line" id="saving-headline-text">Computing&hellip;</div>
+              <div class="saving-headline__sub">based on measured benchmarks &middot; estimate</div>
+            </div>
+
+            <!-- Disclaimer -->
+            <p class="cost-disclaimer">
+              Server count is <strong>max(RAM-bound, CPU-bound, 1)</strong> per stack.
+              Kernel/TCP floor (<code id="disc-kern">2 KB</code>/conn) is stack-independent and applies to both.
+              CPU throughput is scaled linearly from the bench-core measurement to your box vCPU count.
+              Payload bytes are shown for reference but not yet factored into RAM.
+              Real-world results vary &mdash; validate with your own profiling.
+            </p>
+
+            <!-- Collapsible assumptions panel -->
+            <details class="assumptions-panel" id="assumptions-panel">
+              <summary>
+                <span class="assumptions-summary__label">Assumptions</span>
+                <svg class="assumptions-summary__chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </summary>
+              <div class="assumptions-content">
+
+                <!-- Per-stack assumptions -->
+                <div class="assumptions-group">
+                  <div class="assumptions-group__title">Per-stack parameters</div>
+                  <div class="assumptions-stacks" id="assumptions-stacks">
+                    <!-- populated by JS -->
+                  </div>
+                </div>
+
+                <!-- Global assumptions -->
+                <div class="assumptions-group">
+                  <div class="assumptions-group__title">Global parameters</div>
+                  <div class="assumptions-grid">
+                    <div class="assumption-field">
+                      <label class="assumption-field__label" for="a-kernelFloorKB">
+                        Kernel floor (KB/conn) <span class="tag tag--estimate">estimate</span>
+                      </label>
+                      <input type="number" id="a-kernelFloorKB" step="0.1" min="0" />
+                    </div>
+                    <div class="assumption-field">
+                      <label class="assumption-field__label" for="a-rustlsKB">
+                        rustls TLS (KB/conn) <span class="tag tag--measured">measured</span>
+                      </label>
+                      <input type="number" id="a-rustlsKB" step="0.1" min="0" />
+                    </div>
+                    <div class="assumption-field">
+                      <label class="assumption-field__label" for="a-usableRamFrac">
+                        Usable RAM fraction <span class="tag tag--estimate">estimate</span>
+                      </label>
+                      <input type="number" id="a-usableRamFrac" step="0.01" min="0.1" max="1" />
+                    </div>
+                    <div class="assumption-field">
+                      <label class="assumption-field__label" for="a-benchCores">
+                        Bench CPU cores <span class="tag tag--measured">measured</span>
+                      </label>
+                      <input type="number" id="a-benchCores" step="1" min="1" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Reset -->
+                <div class="assumptions-reset">
+                  <button class="btn-reset" id="btn-reset" type="button">Reset to measured defaults</button>
+                </div>
+
+              </div>
+            </details>
+
+          </div><!-- /.cost-results -->
+
+        </div><!-- /.cost-layout -->
+      </div><!-- /.container -->
+    </section>
+
+    <!-- SaaS panel (stub — Task 3) -->
+    <section
+      id="panel-saas"
+      role="tabpanel"
+      aria-labelledby="tab-saas"
+      hidden
+    >
+      <div class="container" style="padding-block: 4rem; text-align: center; color: var(--muted);">
+        SaaS comparison coming in Task 3.
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <span class="footer__copy">&copy; MiracleWS &middot; Built by Yusuf Aslan</span>
+      <nav class="footer__links" aria-label="Footer links">
+        <a href="index.html" class="footer__link">Landing</a>
+        <a href="https://github.com/pikyusufaslan/miraclews" class="footer__link">GitHub</a>
+        <a href="https://github.com/pikyusufaslan/miraclews/issues" class="footer__link">Licensing</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- Load model first, then UI wiring -->
+  <script src="cost-model.js"></script>
+  <script src="cost.js"></script>
+
+</body>
+</html>

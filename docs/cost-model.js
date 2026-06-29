@@ -27,6 +27,7 @@ const DEFAULTS = {
 // per-connection RAM (KB) for a stack, including the kernel floor and optional in-process TLS.
 function perConnRamKB(stackKey, a) {
   const s = a.stacks[stackKey];
+  // Optional per-call override used by the Assumptions panel to preview edits before committing.
   const us = (a.userspaceOverride != null) ? a.userspaceOverride : s.userspaceKB;
   return us + a.kernelFloorKB + (a.tlsInProcess ? a.rustlsKB : 0);
 }
@@ -69,6 +70,9 @@ function saasMonthly(peakConns, messagesPerMonth, pricing) {
   return (messagesPerMonth / 1e6) * pricing.perMillionMsg + peakConns * pricing.perPeakConnMo;
 }
 
+// Alias: selfHostedResult and serversFor are the same function (both names appear in the interface spec).
+const serversFor = selfHostedResult;
+
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { DEFAULTS, perConnRamKB, boxThroughputMps, ramBoundServers, cpuBoundServers, selfHostedResult, saasMonthly };
+  module.exports = { DEFAULTS, perConnRamKB, boxThroughputMps, ramBoundServers, cpuBoundServers, selfHostedResult, serversFor, saasMonthly };
 }
