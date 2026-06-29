@@ -2,6 +2,9 @@
 
 This document consolidates the concrete evidence for correctness and stability claims. Each item is labeled with its scope: **measured for miraclews** (run against the miraclews library directly) or **proven in production** (measured in the larger system miraclews originates from, using the same sharded-reactor architecture).
 
+Raw artifacts and full methodology are in [`evidence/`](evidence/) (soak CSV + RSS-plateau plot,
+Autobahn command + config, benchmark setup) and [`REPRODUCE.md`](REPRODUCE.md).
+
 ---
 
 ## RFC6455 Conformance — Autobahn TestSuite
@@ -56,6 +59,11 @@ The performance and limits cases (9.x/10.x) send messages up to 16 MB. miraclews
 RSS plateau is the primary leak indicator: if RSS grows continuously over 72 hours, there is a leak. RSS flat from hour 1 to hour 72 means the allocator has reached steady state — no leak.
 
 A separate allocator measurement at 4 000-connection churn (repeated open/close, most memory-stressful for the allocator) showed: jemalloc RSS plateau ~6.4 MB, musl malloc plateau ~13.8 MB. Both plateau; the difference is allocator fragmentation/return behavior, not a leak.
+
+A second, **independently inspectable** run is included raw: [`evidence/soak/overnight.csv`](evidence/soak/overnight.csv)
+— a 10h development-machine soak holding ~9,100 connections through ~14.8M connection cycles,
+RSS flat at ~7.5 MB, 0 panics / 0 protocol errors. (Latency there is higher than the dedicated
+figure above because the load generator shares the CPU — see the file's README.)
 
 ---
 

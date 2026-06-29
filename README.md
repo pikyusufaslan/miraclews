@@ -73,6 +73,12 @@ fn main() {
 
 Full details: [EVIDENCE.md](EVIDENCE.md).
 
+**Want to verify the numbers?** Raw artifacts and full methodology are in
+[`evidence/`](evidence/) (soak CSV + RSS-plateau plot, Autobahn command, benchmark setup) and
+[`REPRODUCE.md`](REPRODUCE.md) — machine, kernel tuning, exact commands. Conformance and
+competitor benchmarks are independently reproducible; MiracleWS-specific runs are verifiable with
+an evaluation build ([`EVALUATION.md`](EVALUATION.md)).
+
 ## Architecture
 
 miraclews uses a sharded-reactor model: N OS threads, each with its own `SO_REUSEPORT` listener, epoll/io_uring event loop, and slab, pinned to a CPU core. There are no per-connection async tasks — each thread drives all its connections in a flat event loop. The entire RFC6455 protocol engine lives in a single shared function called by both I/O backends, so behavior is identical regardless of backend. Backpressure is enforced per connection: slow consumers are dropped past a configurable limit.
@@ -81,7 +87,9 @@ Full details: [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Licensing
 
-miraclews is proprietary / closed-source. The source is not distributed. For evaluation, licensing, or a pilot, **open an issue** on this repo.
+miraclews is proprietary / closed-source. The source is not distributed. An evaluation is done
+with a binary build under an evaluation license — see [`EVALUATION.md`](EVALUATION.md) for what
+it includes. For evaluation, licensing, or a pilot, **open an issue** on this repo.
 
 ---
 
