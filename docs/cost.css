@@ -607,9 +607,8 @@
   font-size: var(--text-xs);
   color: var(--text);
   font-weight: 500;
-  padding-bottom: 0.25rem;
-  align-self: end;
   padding-bottom: 0;
+  align-self: end;
   display: flex;
   align-items: center;
   gap: 0.375rem;
@@ -688,5 +687,149 @@
 
   .assumptions-grid {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ----------------------------------------------------------------
+   SaaS panel
+   ---------------------------------------------------------------- */
+.saas-pricing-note {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--muted);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 0.625rem 0.875rem;
+  background-color: color-mix(in srgb, var(--hairline) 20%, transparent);
+  margin-bottom: 1.25rem;
+  line-height: 1.6;
+}
+
+.saas-providers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.saas-provider-card {
+  background-color: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.saas-provider-card__name {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.saas-provider-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.875rem;
+}
+
+.saas-provider-result {
+  border-top: 1px solid var(--hairline);
+  padding-top: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.saas-result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--text-xs);
+  gap: 0.5rem;
+}
+
+.saas-result-label {
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.saas-result-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text);
+  font-size: var(--text-sm);
+  flex-shrink: 0;
+}
+
+.saas-result-value--mws {
+  color: var(--accent);
+}
+
+.saas-result-row--saving {
+  padding-top: 0.375rem;
+  border-top: 1px solid var(--hairline);
+  margin-top: 0.125rem;
+}
+
+.saas-saving--positive {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: #4CAF7D;
+}
+
+.saas-saving--nosave {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.saas-overhead-note {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+  padding: 0.5rem;
+  margin-bottom: 0;
+}
+
+/* ----------------------------------------------------------------
+   Page-level disclaimer bar
+   ---------------------------------------------------------------- */
+.page-disclaimer-bar {
+  border-top: 1px solid var(--hairline);
+  padding-block: 1.125rem;
+  background-color: var(--base);
+}
+
+.page-disclaimer-text {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.65;
+}
+
+.page-disclaimer-text a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.page-disclaimer-text a:hover {
+  color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .saas-provider-inputs {
+    grid-template-columns: 1fr;
   }
 }

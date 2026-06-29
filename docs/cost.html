@@ -76,9 +76,7 @@
           role="tab"
           aria-selected="false"
           aria-controls="panel-saas"
-          disabled
-          title="SaaS comparison coming soon"
-        >SaaS <span style="font-weight:400;opacity:0.6;font-size:0.75em;">(Task 3)</span></button>
+        >SaaS comparison</button>
       </div>
     </div>
 
@@ -341,17 +339,83 @@
       </div><!-- /.container -->
     </section>
 
-    <!-- SaaS panel (stub — Task 3) -->
+    <!-- SaaS panel -->
     <section
       id="panel-saas"
+      class="cost-body"
       role="tabpanel"
       aria-labelledby="tab-saas"
       hidden
     >
-      <div class="container" style="padding-block: 4rem; text-align: center; color: var(--muted);">
-        SaaS comparison coming in Task 3.
-      </div>
+      <div class="container">
+        <div class="cost-layout">
+
+          <!-- Inputs sidebar -->
+          <aside class="cost-inputs" aria-label="SaaS workload inputs">
+            <div class="input-section">
+              <div class="input-section__title">Workload</div>
+
+              <div class="input-row">
+                <label for="saas-conns">Concurrent connections (peak)</label>
+                <input
+                  type="number"
+                  id="saas-conns"
+                  value="1000000"
+                  min="0"
+                  step="10000"
+                  aria-describedby="saas-conns-hint"
+                />
+                <span id="saas-conns-hint" class="sr-only">Default 1 million connections</span>
+              </div>
+
+              <div class="input-row">
+                <label for="saas-msgs-mo">Messages / month</label>
+                <input
+                  type="number"
+                  id="saas-msgs-mo"
+                  value="100000000"
+                  min="0"
+                  step="1000000"
+                />
+              </div>
+
+            </div>
+          </aside>
+
+          <!-- Results + provider pricing -->
+          <div class="cost-results" aria-live="polite" aria-label="SaaS comparison results">
+
+            <!-- Dated label -->
+            <p class="saas-pricing-note">
+              Public pricing estimate, last checked: 2026-06-29 &mdash; edit before using in sales.
+            </p>
+
+            <!-- Provider cards built by JS -->
+            <div id="saas-providers" class="saas-providers-list">
+              <!-- populated by buildSaasProviders() -->
+            </div>
+
+            <!-- Overhead note -->
+            <p class="saas-overhead-note">
+              self-hosting adds operational overhead not priced here.
+            </p>
+
+          </div><!-- /.cost-results -->
+
+        </div><!-- /.cost-layout -->
+      </div><!-- /.container -->
     </section>
+
+    <!-- Page disclaimer bar -->
+    <div class="page-disclaimer-bar" role="contentinfo" aria-label="Methodology disclaimer">
+      <div class="container">
+        <p class="page-disclaimer-text">
+          Estimates from measured benchmarks + your inputs. Not a quote.
+          See <a href="https://github.com/pikyusufaslan/miraclews/tree/main/evidence" target="_blank" rel="noopener">evidence/</a>
+          and <a href="https://github.com/pikyusufaslan/miraclews/blob/main/REPRODUCE.md" target="_blank" rel="noopener">REPRODUCE.md</a>.
+        </p>
+      </div>
+    </div>
 
   </main>
 

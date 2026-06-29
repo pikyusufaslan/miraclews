@@ -182,7 +182,7 @@
   function readWorkload() {
     return {
       conns:         Math.max(0, parseNum("input-conns", 1000000)),
-      messagesPerSec: Math.max(0, parseNum("input-msgs", 10000)),
+      messagesPerSec: Math.max(0, parseNum("input-msgs", 1200000)),
       fanout:        Math.max(1, parseIntNum("input-fanout", 1)),
       tlsInProcess:  document.getElementById("input-tls")
                        ? document.getElementById("input-tls").checked
@@ -342,6 +342,7 @@
     document.getElementById("input-conns").value  = 1000000;
     document.getElementById("input-msgs").value   = 1200000;
     document.getElementById("input-fanout").value  = 1;
+    document.getElementById("input-payload").value = 256;
     document.getElementById("input-tls").checked  = false;
 
     // Stack
@@ -366,6 +367,207 @@
     });
 
     compute();
+  }
+
+  // ── Tab switching ────────────────────────────────────────────────────────
+
+  function initTabs() {
+    var tabSH  = document.getElementById("tab-selfhosted");
+    var tabS   = document.getElementById("tab-saas");
+    var panelSH = document.getElementById("panel-selfhosted");
+    var panelS  = document.getElementById("panel-saas");
+
+    if (!tabSH || !tabS) return;
+
+    function activateTab(which) {
+      if (which === "selfhosted") {
+        tabSH.classList.add("cost-tab--active");
+        tabSH.setAttribute("aria-selected", "true");
+        tabS.classList.remove("cost-tab--active");
+        tabS.setAttribute("aria-selected", "false");
+        if (panelSH) panelSH.hidden = false;
+        if (panelS)  panelS.hidden  = true;
+      } else {
+        tabS.classList.add("cost-tab--active");
+        tabS.setAttribute("aria-selected", "true");
+        tabSH.classList.remove("cost-tab--active");
+        tabSH.setAttribute("aria-selected", "false");
+        if (panelS)  panelS.hidden  = false;
+        if (panelSH) panelSH.hidden = true;
+        computeSaas();
+      }
+    }
+
+    tabSH.addEventListener("click", function () { activateTab("selfhosted"); });
+    tabS.addEventListener("click",  function () { activateTab("saas"); });
+  }
+
+  // ── SaaS tab: build provider cards ──────────────────────────────────────
+
+  function buildSaasProviders() {
+    var container = document.getElementById("saas-providers");
+    if (!container) return;
+    while (container.firstChild) container.removeChild(container.firstChild);
+
+    Object.keys(DEFAULTS.saas).forEach(function (key) {
+      var p = DEFAULTS.saas[key];
+
+      var card = document.createElement("div");
+      card.className = "saas-provider-card";
+
+      // Provider name
+      var nameDiv = document.createElement("div");
+      nameDiv.className = "saas-provider-card__name";
+      nameDiv.textContent = p.label;
+      card.appendChild(nameDiv);
+
+      // Pricing inputs
+      var inputsDiv = document.createElement("div");
+      inputsDiv.className = "saas-provider-inputs";
+
+      // $/million messages
+      var pmsgField = document.createElement("div");
+      pmsgField.className = "assumption-field";
+      var pmsgLabel = document.createElement("label");
+      pmsgLabel.className = "assumption-field__label";
+      pmsgLabel.htmlFor = "saas-pmsg-" + key;
+      pmsgLabel.appendChild(document.createTextNode("$/million messages "));
+      var pmsgTag = document.createElement("span");
+      pmsgTag.className = "tag tag--estimate";
+      pmsgTag.textContent = "estimate";
+      pmsgLabel.appendChild(pmsgTag);
+      var pmsgInput = document.createElement("input");
+      pmsgInput.type = "number"; pmsgInput.id = "saas-pmsg-" + key;
+      pmsgInput.value = p.perMillionMsg; pmsgInput.step = "0.01"; pmsgInput.min = "0";
+      pmsgInput.dataset.saasProvider = key;
+      pmsgField.appendChild(pmsgLabel);
+      pmsgField.appendChild(pmsgInput);
+      inputsDiv.appendChild(pmsgField);
+
+      // $/peak conn/mo
+      var pconnField = document.createElement("div");
+      pconnField.className = "assumption-field";
+      var pconnLabel = document.createElement("label");
+      pconnLabel.className = "assumption-field__label";
+      pconnLabel.htmlFor = "saas-pconn-" + key;
+      pconnLabel.appendChild(document.createTextNode("$/peak conn/mo "));
+      var pconnTag = document.createElement("span");
+      pconnTag.className = "tag tag--estimate";
+      pconnTag.textContent = "estimate";
+      pconnLabel.appendChild(pconnTag);
+      var pconnInput = document.createElement("input");
+      pconnInput.type = "number"; pconnInput.id = "saas-pconn-" + key;
+      pconnInput.value = p.perPeakConnMo; pconnInput.step = "0.0001"; pconnInput.min = "0";
+      pconnInput.dataset.saasProvider = key;
+      pconnField.appendChild(pconnLabel);
+      pconnField.appendChild(pconnInput);
+      inputsDiv.appendChild(pconnField);
+
+      card.appendChild(inputsDiv);
+
+      // Results section
+      var resultDiv = document.createElement("div");
+      resultDiv.className = "saas-provider-result";
+
+      function makeResultRow(labelText, valueId, valueCls) {
+        var row = document.createElement("div");
+        row.className = "saas-result-row";
+        var lbl = document.createElement("div");
+        lbl.className = "saas-result-label";
+        lbl.appendChild(document.createTextNode(labelText + " "));
+        var lTag = document.createElement("span");
+        lTag.className = "tag tag--estimate";
+        lTag.textContent = "estimate";
+        lbl.appendChild(lTag);
+        row.appendChild(lbl);
+        var val = document.createElement("div");
+        val.className = "saas-result-value" + (valueCls ? " " + valueCls : "");
+        val.id = valueId;
+        val.textContent = "—";
+        row.appendChild(val);
+        return row;
+      }
+
+      resultDiv.appendChild(makeResultRow(p.label + " / mo", "saas-out-provider-" + key, ""));
+      resultDiv.appendChild(makeResultRow("MiracleWS self-host / mo", "saas-out-mws-" + key, "saas-result-value--mws"));
+
+      // Saving row
+      var savingRow = document.createElement("div");
+      savingRow.className = "saas-result-row saas-result-row--saving";
+      var savingEl = document.createElement("div");
+      savingEl.className = "saas-saving";
+      savingEl.id = "saas-out-saving-" + key;
+      savingEl.textContent = "—";
+      savingRow.appendChild(savingEl);
+      resultDiv.appendChild(savingRow);
+
+      card.appendChild(resultDiv);
+      container.appendChild(card);
+    });
+  }
+
+  // ── SaaS tab: compute + render ───────────────────────────────────────────
+
+  function computeSaas() {
+    var peakConns   = Math.max(0, parseNum("saas-conns", 1000000));
+    var msgsPerMonth = Math.max(0, parseNum("saas-msgs-mo", 100000000));
+
+    // MiracleWS self-hosted estimate — same box/assumptions as the self-hosted tab
+    var assumptions = readAssumptions();
+    var box = readBox();
+    var msgsPerSec = msgsPerMonth / 2592000; // 30 * 24 * 3600
+    var mwsWorkload = { conns: peakConns, messagesPerSec: msgsPerSec, fanout: 1, tlsInProcess: false };
+    var mwsResult = selfHostedResult("miraclews", mwsWorkload, assumptions, box);
+    var mwsMo = mwsResult.monthly;
+
+    Object.keys(DEFAULTS.saas).forEach(function (key) {
+      var pmsgEl  = document.getElementById("saas-pmsg-" + key);
+      var pconnEl = document.getElementById("saas-pconn-" + key);
+      var pmsg  = pmsgEl  ? parseFloat(pmsgEl.value)  : NaN;
+      var pconn = pconnEl ? parseFloat(pconnEl.value) : NaN;
+      if (!isFinite(pmsg)  || pmsg  < 0) pmsg  = DEFAULTS.saas[key].perMillionMsg;
+      if (!isFinite(pconn) || pconn < 0) pconn = DEFAULTS.saas[key].perPeakConnMo;
+
+      var provMo = saasMonthly(peakConns, msgsPerMonth, { perMillionMsg: pmsg, perPeakConnMo: pconn });
+      var saving  = provMo - mwsMo;
+
+      setVal("saas-out-provider-" + key, fmtDollar(provMo));
+      setVal("saas-out-mws-" + key,      fmtDollar(mwsMo));
+
+      var savingEl = document.getElementById("saas-out-saving-" + key);
+      if (!savingEl) return;
+      while (savingEl.firstChild) savingEl.removeChild(savingEl.firstChild);
+
+      if (saving > 0) {
+        var pos = document.createElement("span");
+        pos.className = "saas-saving--positive";
+        pos.textContent = "self-hosting saves " + fmtDollar(saving) + "/mo";
+        savingEl.appendChild(pos);
+      } else if (saving < 0) {
+        var neg = document.createElement("span");
+        neg.className = "saas-saving--nosave";
+        neg.textContent = "SaaS is " + fmtDollar(-saving) + "/mo less at this workload";
+        savingEl.appendChild(neg);
+      } else {
+        savingEl.appendChild(document.createTextNode("costs are equal at this workload"));
+      }
+    });
+  }
+
+  // ── SaaS listeners ───────────────────────────────────────────────────────
+
+  function wireSaasListeners() {
+    ["saas-conns", "saas-msgs-mo"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener("input", computeSaas);
+    });
+    // Provider pricing inputs are dynamic — delegate via container
+    var pc = document.getElementById("saas-providers");
+    if (pc) {
+      pc.addEventListener("input", function (e) {
+        if (e.target.dataset.saasProvider) computeSaas();
+      });
+    }
   }
 
   // ── Wire up event listeners ───────────────────────────────────────────────
@@ -412,8 +614,12 @@
     applyPreset(DEFAULTS.defaultBox);
     fillGlobalAssumptionFields();
     buildAssumptionStacks();
+    buildSaasProviders();
     wireListeners();
-    compute(); // initial render with defaults
+    wireSaasListeners();
+    initTabs();
+    compute();      // initial render for self-hosted tab
+    computeSaas();  // pre-compute SaaS so values are ready when user switches
   }
 
   if (document.readyState === "loading") {

@@ -177,6 +177,26 @@ code, pre {
   width: auto;
 }
 
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.nav__link {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+
+.nav__link:hover,
+.nav__link:focus-visible {
+  color: var(--text);
+  outline: none;
+}
+
 .nav__cta {
   font-family: var(--font-display);
   font-size: var(--text-sm);
