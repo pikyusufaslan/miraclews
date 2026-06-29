@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiracleWS — high-performance WebSocket core</title>
+  <meta name="description" content="A dependency-minimal WebSocket server core in Rust. Sharded epoll/io_uring reactor. ~85 bytes idle RAM per connection. 239/0 Autobahn pass/fail." />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://pikyusufaslan.github.io/miraclews/" />
+  <meta property="og:title"       content="MiracleWS — high-performance WebSocket core" />
+  <meta property="og:description" content="~85 B idle RAM/conn. 300k connections on one box. 1 runtime dependency. 239/0 Autobahn. Built in Rust." />
+  <meta property="og:image"       content="assets/og-image.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+
+  <!-- Favicons -->
+  <link rel="icon"       type="image/png" sizes="32x32"   href="assets/favicon-32.png" />
+  <link rel="apple-touch-icon"             sizes="180x180" href="assets/favicon-180.png" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============================================================
+       Navigation
+       ============================================================ -->
+  <nav class="nav" aria-label="Site navigation">
+    <div class="nav__inner">
+      <a href="#hero" class="nav__logo" aria-label="MiracleWS — back to top">
+        <img src="assets/logo-mark.png" alt="MiracleWS mark" height="28" width="28" />
+      </a>
+      <a href="https://github.com/pikyusufaslan/miraclews/issues" class="nav__cta">
+        Get a license →
+      </a>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- ============================================================
+         1. Hero
+         ============================================================ -->
+    <section class="hero" id="hero" aria-labelledby="hero-heading">
+      <div class="hero__inner">
+
+        <a href="https://github.com/pikyusufaslan/miraclews" aria-label="MiracleWS on GitHub">
+          <img
+            src="assets/logo-wordmark-dark.png"
+            alt="MiracleWS"
+            class="hero__wordmark"
+            width="380"
+            height="86"
+          />
+        </a>
+
+        <h1 class="hero__headline" id="hero-heading">
+          A WebSocket core that holds millions of idle connections at
+          <mark>~85&nbsp;bytes</mark> each.
+        </h1>
+
+        <p class="hero__sub">
+          Dependency-minimal. Sharded epoll/io_uring reactor. Built in Rust.
+        </p>
+
+        <div class="hero__actions">
+          <a
+            href="https://github.com/pikyusufaslan/miraclews/issues"
+            class="btn-primary"
+          >
+            Get a license →
+          </a>
+          <a
+            href="https://github.com/pikyusufaslan/miraclews"
+            class="btn-ghost"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            View on GitHub
+          </a>
+        </div>
+
+        <!-- Ambient credibility stat -->
+        <div class="hero__stat" aria-label="Autobahn test results: 239 pass, 0 fail">
+          <span class="hero__stat-number" aria-hidden="true">239 / 0</span>
+          <span class="hero__stat-label">Autobahn cases &mdash; pass&thinsp;/&thinsp;fail</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================
+         2. At a glance — stat cards
+         ============================================================ -->
+    <section class="stats" aria-labelledby="stats-heading">
+      <div class="container">
+        <h2 id="stats-heading" class="sr-only">At a glance</h2>
+        <div class="stats__grid">
+
+          <div class="stat-card">
+            <div class="stat-card__number" aria-label="approximately 85 bytes">~85 B</div>
+            <div class="stat-card__label">idle RAM per connection<br />(epoll buf-ring backend)</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card__number" aria-label="300 thousand">300k</div>
+            <div class="stat-card__label">connections on one commodity box</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card__number" aria-label="1">1</div>
+            <div class="stat-card__label">runtime dependency<br />(libc, optional — feature-gated)</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card__number" aria-label="239 slash 0">239/0</div>
+            <div class="stat-card__label">Autobahn test cases<br />pass / fail</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         3. Why
+         ============================================================ -->
+    <section class="section why" aria-labelledby="why-heading">
+      <div class="container">
+        <span class="section-label">Why it exists</span>
+        <h2 class="section-heading" id="why-heading">Most WS libraries trade your memory for their convenience.</h2>
+
+        <div class="why__body">
+          <p>
+            Most WebSocket libraries are built around a task-per-connection model — one
+            <code>tokio::spawn</code> per socket. At idle, that grows to roughly 3&thinsp;KB of heap
+            per connection before a single byte of application data is stored. A server holding
+            100k connections spends 300&thinsp;MB just on runtime overhead.
+          </p>
+          <p>
+            Others pull in a framing crate and schedule work through a runtime's event loop,
+            adding dispatch latency on every message and making it hard to reason about
+            backpressure.
+          </p>
+          <p>
+            MiracleWS is a thin transport core — not a framework. You implement one
+            <code>Handler</code> trait; MiracleWS owns the TCP lifecycle, the RFC&thinsp;6455 framing,
+            masking validation, and backpressure. There is no async runtime in the hot path.
+            No Tokio. No spawn overhead. No shared scheduler in the critical loop.
+          </p>
+          <p>
+            The result is a server that holds 300k idle connections on a single box in under
+            30&thinsp;MB of connection state — and saturates local loopback at over 2.5&thinsp;M
+            messages per second, p99 under 10&thinsp;ms.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         4. How it works
+         ============================================================ -->
+    <section class="section section--alt how" aria-labelledby="how-heading">
+      <div class="container">
+        <span class="section-label">Architecture</span>
+        <h2 class="section-heading" id="how-heading">One Handler trait. N isolated reactors.</h2>
+        <p class="section-sub">
+          MiracleWS uses a sharded reactor model. Each CPU core runs its own
+          event loop — no shared mutable state in the I/O path.
+        </p>
+
+        <div class="how__diagram-wrapper" role="img" aria-label="Sharded reactor architecture diagram">
+          <div class="how__diagram-header">
+            <span class="how__diagram-dot"></span>
+            <span class="how__diagram-dot"></span>
+            <span class="how__diagram-dot"></span>
+            <span class="how__diagram-title">miraclews — reactor topology</span>
+          </div>
+          <div class="how__diagram">
+<pre>
+<span class="dia-muted">  SO_REUSEPORT distributes incoming connections across N shards</span>
+
+  ┌──────────────────────────────────────────────────────┐
+  │                       OS kernel                      │
+  └──────────┬─────────────────┬────────────────┬────────┘
+             │                 │                │
+  ┌──────────┴──────┐  ┌───────┴───────┐  ┌────┴────────────┐
+  │ <span class="dia-accent">Shard 0</span>          │  │ <span class="dia-accent">Shard 1</span>        │  │ <span class="dia-accent">Shard N</span>          │
+  │ Core 0          │  │ Core 1        │  │ Core N          │
+  │─────────────────│  │───────────────│  │─────────────────│
+  │ epoll / io_uring│  │ epoll/io_uring│  │ epoll / io_uring│
+  │─────────────────│  │───────────────│  │─────────────────│
+  │ slab arena      │  │ slab arena    │  │ slab arena      │
+  │ [c][c][c][c][c] │  │ [c][c][c][c] │  │ [c][c][c][c][c] │
+  └──────────┬──────┘  └───────┬───────┘  └────┬────────────┘
+             └─────────────────┴────────────────┘
+                                │
+                     <span class="dia-muted">your code ──────────────────</span>
+                     ┌──────────┴───────────┐
+                     │  <span class="dia-accent">impl Handler for</span>   │
+                     │  <span class="dia-accent">YourAppState</span>       │
+                     │  (app logic only)    │
+                     └──────────────────────┘
+</pre>
+          </div>
+        </div>
+
+        <div class="how__notes">
+          <div class="how__note">
+            <div class="how__note-title">No cross-shard coordination</div>
+            <div class="how__note-body">
+              Each shard owns its connections exclusively. There are no mutexes, no channels,
+              and no shared queues in the I/O path. Shards never wait on each other.
+            </div>
+          </div>
+          <div class="how__note">
+            <div class="how__note-title">Two backends, one protocol engine</div>
+            <div class="how__note-body">
+              Switch between raw libc <code>epoll</code> and <code>io_uring</code> (with or
+              without registered buffer rings) via a compile-time feature flag. The RFC&thinsp;6455
+              engine is shared.
+            </div>
+          </div>
+          <div class="how__note">
+            <div class="how__note-title">Your Handler, called inline</div>
+            <div class="how__note-body">
+              There is no task queue or scheduler between the reactor loop and your code. The
+              <code>Handler</code> is invoked directly inside the event loop — no indirection,
+              no wakeup latency.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================
+         5. Benchmarks
+         ============================================================ -->
+    <section class="section bench" aria-labelledby="bench-heading">
+      <div class="container">
+        <span class="section-label">Performance</span>
+        <h2 class="section-heading" id="bench-heading">Numbers from the same machine, same harness.</h2>
+        <p class="section-sub">
+          Loopback, shared CPU, no kernel bypass. Numbers reflect MiracleWS at its current
+          development stage, not theoretical limits.
+        </p>
+
+        <div class="bench__table-wrapper">
+          <table class="bench-table" aria-label="MiracleWS backend benchmark results">
+            <thead>
+              <tr>
+                <th scope="col">Backend</th>
+                <th scope="col">Throughput</th>
+                <th scope="col">p99 (saturated)</th>
+                <th scope="col">Idle RAM / conn</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>epoll (raw libc)</td>
+                <td class="num">~2.5M msg/s</td>
+                <td class="num-plain">~10 ms</td>
+                <td class="num">~85 B</td>
+              </tr>
+              <tr>
+                <td>io_uring (naive)</td>
+                <td class="num">~2.7M msg/s</td>
+                <td class="num-plain">~8 ms</td>
+                <td class="num-plain">~5.5 KB</td>
+              </tr>
+              <tr>
+                <td>io_uring (buf-ring)</td>
+                <td class="num">~2.4M msg/s</td>
+                <td class="num-plain">~10 ms</td>
+                <td class="num">~107 B</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bench__callout" role="note">
+          vs tokio-tungstenite on the same hardware and harness:
+          <strong>~4×</strong> throughput &nbsp;·&nbsp; <strong>~33×</strong> less idle RAM.
+        </div>
+
+        <p class="bench__note">
+          Measurements taken on loopback with shared CPU — both client and server on the same
+          host. Real-world numbers will vary. Latency figures are at saturation; unloaded
+          p99 is sub-millisecond in all backends.
+        </p>
+
+      </div>
+    </section>
+
+    <!-- ============================================================
+         6. Evidence
+         ============================================================ -->
+    <section class="section section--alt evidence" aria-labelledby="evidence-heading">
+      <div class="container">
+        <span class="section-label">Verification</span>
+        <h2 class="section-heading" id="evidence-heading">Tested to a high standard, then tested again.</h2>
+        <p class="section-sub">
+          RFC conformance, multi-day soak under real connection load, and protocol-level
+          correctness under adversarial input.
+        </p>
+
+        <div class="evidence__grid">
+
+          <div class="evidence-card">
+            <span class="evidence-card__badge evidence-card__badge--green">RFC 6455 Conformance</span>
+            <div class="evidence-card__stat">239 / 0</div>
+            <div class="evidence-card__title">Autobahn Test Suite</div>
+            <div class="evidence-card__body">
+              All 239 Autobahn test cases passed. Zero failures. Covers framing, masking,
+              fragmentation, control frames, close handshakes, and UTF-8 validation under
+              malformed input.
+            </div>
+          </div>
+
+          <div class="evidence-card">
+            <span class="evidence-card__badge">72h Soak</span>
+            <div class="evidence-card__stat">0 errors</div>
+            <div class="evidence-card__title">WS Core — 100k × 3 days</div>
+            <div class="evidence-card__body">
+              100,000 persistent connections held for 72 hours on a dedicated Ubuntu box.
+              Zero errors. RSS reached a plateau and held — no leak. Measured p99 latency
+              at plateau: <strong>894&thinsp;µs</strong>.
+            </div>
+          </div>
+
+          <div class="evidence-card">
+            <span class="evidence-card__badge">24h Soak</span>
+            <div class="evidence-card__stat">0 drop</div>
+            <div class="evidence-card__title">WebTransport — 86.4M datagrams</div>
+            <div class="evidence-card__body">
+              2,000 WebTransport sessions over 24 hours. 86.4&thinsp;M datagrams sent. Zero
+              drops. RSS moved from 264&thinsp;MB to a stable 220&thinsp;MB plateau —
+              confirming no memory growth in the WT path.
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         7. Licensing CTA
+         ============================================================ -->
+    <section class="cta-section" aria-labelledby="cta-heading">
+      <div class="container">
+        <div class="cta-section__inner">
+          <p class="cta-section__eyebrow">Proprietary · Binary-only distribution</p>
+          <h2 class="cta-section__heading" id="cta-heading">
+            Source is not distributed.<br />The binary ships.
+          </h2>
+          <div class="cta-section__body">
+            <p>
+              MiracleWS is proprietary software. For evaluation, licensing, or a
+              pilot integration — open an issue on GitHub and we will be in touch.
+            </p>
+          </div>
+          <a
+            href="https://github.com/pikyusufaslan/miraclews/issues"
+            class="btn-primary"
+          >
+            Open a licensing issue →
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================
+       Footer
+       ============================================================ -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <span class="footer__copy">© MiracleWS · Built by Yusuf Aslan</span>
+      <nav class="footer__links" aria-label="Footer links">
+        <a
+          href="https://github.com/pikyusufaslan/miraclews"
+          class="footer__link"
+        >GitHub</a>
+        <a
+          href="https://github.com/pikyusufaslan/miraclews/issues"
+          class="footer__link"
+        >Licensing</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- Screen-reader utility -->
+  <style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+  </style>
+
+</body>
+</html>
