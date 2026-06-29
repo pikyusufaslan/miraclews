@@ -793,6 +793,17 @@
   color: var(--muted);
 }
 
+.saas-saving--caution {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: #C8A030;
+  line-height: 1.55;
+}
+
+.saas-provider-card--zero-pconn {
+  border-color: color-mix(in srgb, #C8A030 40%, var(--hairline));
+}
+
 .saas-overhead-note {
   font-size: var(--text-xs);
   color: var(--muted);

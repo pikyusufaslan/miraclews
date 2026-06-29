@@ -414,6 +414,7 @@
 
       var card = document.createElement("div");
       card.className = "saas-provider-card";
+      card.id = "saas-card-" + key;
 
       // Provider name
       var nameDiv = document.createElement("div");
@@ -538,7 +539,25 @@
       if (!savingEl) return;
       while (savingEl.firstChild) savingEl.removeChild(savingEl.firstChild);
 
-      if (saving > 0) {
+      // Toggle warning class on card when per-conn rate is 0 but connections exist
+      var isZeroPconn = (pconn === 0 && peakConns > 0);
+      var cardEl = document.getElementById("saas-card-" + key);
+      if (cardEl) {
+        if (isZeroPconn) {
+          cardEl.classList.add("saas-provider-card--zero-pconn");
+        } else {
+          cardEl.classList.remove("saas-provider-card--zero-pconn");
+        }
+      }
+
+      if (isZeroPconn) {
+        // Do NOT show the misleading saving/SaaS-cheaper verdict — the per-conn cost is unknown.
+        // Show a caution instead so the reader knows the figure is a floor only.
+        var caution = document.createElement("span");
+        caution.className = "saas-saving--caution";
+        caution.textContent = "Connection-based pricing not modeled — this figure is a floor and excludes per-connection charges, which dominate at high concurrency. Enter this provider’s per-connection rate for a real comparison.";
+        savingEl.appendChild(caution);
+      } else if (saving > 0) {
         var pos = document.createElement("span");
         pos.className = "saas-saving--positive";
         pos.textContent = "self-hosting saves " + fmtDollar(saving) + "/mo";
