@@ -115,7 +115,7 @@
       var usLabel = makeEl("label", {
         className: "assumption-field__label",
         htmlFor: "a-us-" + key,
-        textContent: "Userspace KB/conn",
+        textContent: "Userspace KB/conn (idle)",
       });
       var usInput = makeEl("input");
       usInput.type = "number"; usInput.id = "a-us-" + key;
@@ -130,7 +130,7 @@
       var tpLabel = makeEl("label", {
         className: "assumption-field__label",
         htmlFor: "a-tp-" + key,
-        textContent: "Throughput Mps",
+        textContent: "Throughput Mps (loopback)",
       });
       var tpInput = makeEl("input");
       tpInput.type = "number"; tpInput.id = "a-tp-" + key;
