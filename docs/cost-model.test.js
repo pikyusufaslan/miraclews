@@ -8,14 +8,14 @@ const wl = { conns: 1_000_000, messagesPerSec: 100_000, fanout: 5, tlsInProcess:
 
 // per-conn RAM includes kernel floor:
 assert.strictEqual(M.perConnRamKB("miraclews", Object.assign({}, A, {tlsInProcess:false})), 0.25 + 2);   // 2.25 KB
-assert.strictEqual(M.perConnRamKB("tungstenite", Object.assign({}, A, {tlsInProcess:false})), 8.2 + 2);  // 10.2 KB
+assert.strictEqual(M.perConnRamKB("tungstenite", Object.assign({}, A, {tlsInProcess:false})), 10.0 + 2); // 12.0 KB (real-NIC conservative)
 
 // RAM-bound servers (Production = 64GB * 0.8 = 52428.8 MB usable = 53687091.2 KB):
 const mw = M.selfHostedResult("miraclews", wl, A, prod);
 const tt = M.selfHostedResult("tungstenite", wl, A, prod);
 // 1e6 * 2.25 / (64*1024*1024*0.8) = 2.25e6 / 53687091.2 = 0.0419 -> ceil 1; CPU: 5e5/(3.0*16/12*1e6)=5e5/4e6=0.125 -> ceil 1
 assert.strictEqual(mw.servers, 1);
-// tungstenite RAM: 1e6*10.2/53687091.2 = 0.19 -> 1; CPU: 5e5/(0.76*16/12*1e6)=5e5/1.013e6=0.49 -> 1
+// tungstenite RAM: 1e6*12.0/53687091.2 = 0.22 -> 1; CPU: 5e5/(0.76*16/12*1e6)=5e5/1.013e6=0.49 -> 1
 assert.strictEqual(tt.servers, 1);
 // saving exists at larger scale — bump conns to make RAM dominate:
 const big = { conns: 50_000_000, messagesPerSec: 100_000, fanout: 5, tlsInProcess: false };

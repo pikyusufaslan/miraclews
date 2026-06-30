@@ -270,11 +270,10 @@
             <!-- Disclaimer -->
             <p class="cost-disclaimer">
               Server count is <strong>max(RAM-bound, CPU-bound, 1)</strong> per stack.
-              Kernel/TCP floor (<code id="disc-kern">2 KB</code>/conn) is stack-independent and applies to both.
-              CPU throughput is scaled linearly from the bench-core measurement to your box vCPU count.
-              Payload bytes are shown for reference but not yet factored into RAM.
-              Throughputs are relative loopback benchmarks &mdash; the cross-stack ratio is the reliable signal; absolute server counts are indicative, not a capacity guarantee.
-              Real-world results vary &mdash; validate with your own profiling.
+              <strong>Idle per-connection RAM is verified on a real NIC</strong> &mdash; a 2-machine rig, MiracleWS vs tokio-tungstenite vs fastwebsockets under the same workload (<a href="https://github.com/pikyusufaslan/miraclews/tree/main/evidence/rig" target="_blank" rel="noopener">benchmark &amp; raw data</a>). MiracleWS measured 0.21 KB/conn (listed 0.25, rounded up; competitors rounded down). Userspace advantage is <strong>40×+</strong>; adding the stack-independent kernel/TCP floor (<code id="disc-kern">2 KB</code>/conn, still an <em>estimate</em>) brings total-host memory to <strong>~4&ndash;6×</strong>.
+              The <strong>1 M figures are extrapolated</strong> from a slope verified to 200 k connections &mdash; not a measured plateau.
+              <strong>Throughput is still a loopback benchmark</strong> (real-NIC throughput &amp; latency are pending a gigabit rig) &mdash; trust the cross-stack ratio, not absolute capacity. Payload bytes are shown for reference but not yet factored into RAM.
+              Validate with your own profiling.
             </p>
 
             <!-- Collapsible assumptions panel -->

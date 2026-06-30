@@ -5,10 +5,15 @@ const DEFAULTS = {
   rustlsKB: 4.9,             // measured: rustls ServerConnection per active conn (TLS in-process)
   usableRamFrac: 0.80,       // estimate: fraction of box RAM usable for connection state
   stacks: {
-    // userspaceKB = measured idle RAM/conn (8000-conn bench); throughputMps = M deliveries/s @ benchCores
+    // userspaceKB = idle RAM/conn. MiracleWS / tungstenite / fastws are CONSERVATIVE values from the
+    // 2-machine REAL-NIC idle benchmark (same rig, same load, slope verified to 200k conns — see
+    // evidence/rig/). MiracleWS measured 0.21, listed 0.25 (rounded up); competitors rounded down
+    // (tungstenite measured 13.0 → 10.0; fastws 5.0 → 4.0) so the advantage is understated, not inflated.
+    // node/socketio remain estimates (not on that rig). throughputMps = LOOPBACK deliveries/s @ benchCores,
+    // NOT yet re-measured on real NIC (pending the gigabit rig) — the cross-stack RATIO is the reliable part.
     miraclews:   { label: "MiracleWS",          userspaceKB: 0.25, throughputMps: 3.0,  tag: "measured" },
-    tungstenite: { label: "tokio-tungstenite",  userspaceKB: 8.2,  throughputMps: 0.76, tag: "measured" },
-    fastws:      { label: "fastwebsockets",     userspaceKB: 2.8,  throughputMps: 0.86, tag: "measured" },
+    tungstenite: { label: "tokio-tungstenite",  userspaceKB: 10.0, throughputMps: 0.76, tag: "measured" },
+    fastws:      { label: "fastwebsockets",     userspaceKB: 4.0,  throughputMps: 0.86, tag: "measured" },
     nodews:      { label: "Node / ws",          userspaceKB: 8.6,  throughputMps: 0.30, tag: "estimate" },
     socketio:    { label: "Socket.IO",          userspaceKB: 10.0, throughputMps: 0.15, tag: "estimate" },
   },

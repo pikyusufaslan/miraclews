@@ -95,6 +95,14 @@ At 100 000 connections: server RSS 78 MB, CPU ~12%, 731 000 frames, 0 errors.
 
 ---
 
+## Real-NIC Idle Memory vs Competitors
+
+*Scope: measured for miraclews, on a 2-machine real-NIC rig, head-to-head against tokio-tungstenite and fastwebsockets under an identical idle workload on the same hardware. Full method, tables, raw data, and honest caveats: [`evidence/rig/`](evidence/rig/).*
+
+Idle per-connection **userspace** RAM, same rig and load: **MiracleWS 0.21 KB/conn** vs **fastwebsockets 5.0** (~24×) vs **tokio-tungstenite 13.0** (~62×). Linear across 10 k → 200 k connections (R² = 0.998, two measurement paths). 1 M userspace is **extrapolated** from that slope (~0.22 GB) — not a measured plateau. Once the stack-independent kernel/TCP floor (~2 KB/conn, an estimate) is added, total-host memory advantage is **~4–6×**. Throughput/latency on a real NIC are pending a gigabit rig and are not claimed here.
+
+---
+
 ## Summary
 
 | Claim | Evidence type | Result |
@@ -103,3 +111,4 @@ At 100 000 connections: server RSS 78 MB, CPU ~12%, 731 000 frames, 0 errors.
 | No memory leak under 72h active load | Dedicated-machine soak | RSS plateau, 0 errors |
 | No leak under 24h WebTransport load | Companion transport soak | RSS plateau, 86.4M datagrams, 0 drop |
 | 300k concurrent connections | Production system measurement | ~1.4 KB/conn, sustained |
+| Idle RAM/conn vs competitors | 2-machine real-NIC rig, same workload | 0.21 KB/conn — 24–62× smaller (userspace) |
